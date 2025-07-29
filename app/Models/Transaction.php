@@ -8,9 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Transaction extends Model
 {
     protected $guarded = ['id'];
-    
-    public function pocket()
+    /**
+     * Get the budget pocket that owns the transaction.
+     */
+    public function budgetPocket()
     {
-        return $this->belongsTo(Pocket::class);
+        return $this->belongsTo(BudgetPocket::class);
     }
 }

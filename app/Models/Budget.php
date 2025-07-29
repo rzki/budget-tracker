@@ -9,8 +9,8 @@ class Budget extends Model
 {
     protected $guarded = ['id'];
 
-    public function pockets()
+    public function budgetPockets()
     {
-        return $this->hasMany(Pocket::class);
+        return $this->hasMany(BudgetPocket::class);
     }
 }

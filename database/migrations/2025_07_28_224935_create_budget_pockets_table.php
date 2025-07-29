@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\Budget;
-use App\Models\User;
+use App\Models\Pocket;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -13,10 +13,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pockets', function (Blueprint $table) {
+        Schema::create('budget_pockets', function (Blueprint $table) {
             $table->id();
-            $table->uuid('pocketId')->unique();
-            $table->string('name');
+            $table->foreignIdFor(Budget::class);
+            $table->foreignIdFor(Pocket::class);
+            $table->integer('allocated_amount')->default(0);
             $table->timestamps();
         });
     }
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('pocket_budget');
     }
 };

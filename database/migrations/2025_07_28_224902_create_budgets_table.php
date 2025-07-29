@@ -16,8 +16,6 @@ return new class extends Migration
             $table->id();
             $table->uuid('budgetId')->unique();
             $table->string('name');
-            $table->date('period_start');
-            $table->date('period_end');
             $table->integer('amount');
             $table->timestamps();
         });

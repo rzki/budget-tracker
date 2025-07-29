@@ -17,9 +17,8 @@ use App\Filament\Resources\BudgetResource\RelationManagers;
 class BudgetResource extends Resource
 {
     protected static ?string $model = Budget::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
-
+    protected static ?int $navigationSort = 1;
     public static function form(Form $form): Form
     {
         return $form
@@ -30,14 +29,75 @@ class BudgetResource extends Resource
                     ->required()
                     ->maxLength(255)
                     ->columnSpanFull(),
-                Forms\Components\DatePicker::make('period_start')
-                    ->required(),
-                Forms\Components\DatePicker::make('period_end')
-                    ->required(),
                 Forms\Components\TextInput::make('amount')
                     ->required()
                     ->numeric()
+                    ->reactive()
+                    ->columnSpanFull(),
+                Forms\Components\Repeater::make('budgetPockets')
+                    ->label('Budget >< Pockets')
+                    ->relationship('budgetPockets')
+                    ->schema([
+                        Forms\Components\Select::make('pocket_id')
+                            ->relationship('pocket', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+                        Forms\Components\TextInput::make('allocated_amount')
+                            ->required()
+                            ->numeric()
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                $budgetPockets = $get('budgetPockets') ?? [];
+                                $total = collect($budgetPockets)->sum('allocated_amount');
+                                $set('total_allocated', $total);
+                                
+                                $budgetAmount = $get('amount') ?? 0;
+                                $remaining = $budgetAmount - $total;
+                                $set('remaining_balance', $remaining);
+                            }),
+                    ])
+                    ->reorderable()
+                    ->reorderableWithDragAndDrop(false)
+                    ->reorderableWithButtons()
                     ->columnSpanFull()
+                    ->createItemButtonLabel('Add Pocket')
+                    ->live()
+                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                        $budgetPockets = $get('budgetPockets') ?? [];
+                        $total = collect($budgetPockets)->sum('allocated_amount');
+                        $set('total_allocated', $total);
+                        
+                        $budgetAmount = $get('amount') ?? 0;
+                        $remaining = $budgetAmount - $total;
+                        $set('remaining_balance', $remaining);
+                    }),
+                Forms\Components\TextInput::make('total_allocated')
+                    ->label('Total Allocated')
+                    ->numeric()
+                    ->disabled()
+                    ->live()
+                    ->afterStateHydrated(function (Forms\Components\TextInput $component, $state, callable $get) {
+                        $budgetPockets = $get('budgetPockets') ?? [];
+                        $total = collect($budgetPockets)->sum('allocated_amount');
+                        $component->state($total);
+                    })
+                    ->formatStateUsing(fn ($state) => 'Rp. ' . number_format($state ?? 0, 0, '', '.'))
+                    ->columnSpan(1),
+                Forms\Components\TextInput::make('remaining_balance')
+                    ->label('Remaining Balance')
+                    ->numeric()
+                    ->disabled()
+                    ->live()
+                    ->afterStateHydrated(function (Forms\Components\TextInput $component, $state, callable $get) {
+                        $budgetAmount = $get('amount') ?? 0;
+                        $budgetPockets = $get('budgetPockets') ?? [];
+                        $totalAllocated = collect($budgetPockets)->sum('allocated_amount');
+                        $remaining = $budgetAmount - $totalAllocated;
+                        $component->state($remaining);
+                    })
+                    ->formatStateUsing(fn ($state) => 'Rp. ' . number_format($state ?? 0, 0, '', '.'))
+                    ->columnSpan(1),
             ]);
     }
 
@@ -47,14 +107,6 @@ class BudgetResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('period_start')
-                    ->label('Period Start')
-                    ->date('d M Y')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('period_end')
-                    ->label('Period End')
-                    ->date('d M Y')
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('amount')
                     ->numeric()
                     ->sortable()
