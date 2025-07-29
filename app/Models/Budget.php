@@ -9,10 +9,8 @@ class Budget extends Model
 {
     protected $guarded = ['id'];
 
-    public function categories()
+    public function allocations()
     {
-        return $this->belongsToMany(Category::class, 'budget_categories')
-                    ->withPivot('allocated_amount')
-                    ->withTimestamps();
+        return $this->hasMany(Allocation::class);
     }
 }
