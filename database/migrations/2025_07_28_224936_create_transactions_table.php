@@ -15,11 +15,10 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->uuid('transactionId')->unique();
-            $table->foreignIdFor(Pocket::class)->nullable()->cascadeOnUpdate()->setNullOnDelete();
-            $table->string('name');
+            $table->foreignId('budget_pocket_id')->constrained('budget_pockets')->cascadeOnDelete()->cascadeOnUpdate();
             $table->integer('amount');
-            $table->enum('type', ['income', 'expense'])->default('income');
-            $table->string('description');
+            $table->enum('type', ['income', 'expense'])->default('expense');
+            $table->string('note');
             $table->date('date');
             $table->timestamps();
         });
