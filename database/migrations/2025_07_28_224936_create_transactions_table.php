@@ -16,7 +16,9 @@ return new class extends Migration
             $table->id();
             $table->uuid('transactionId')->unique();
             $table->foreignIdFor(Pocket::class)->nullable()->cascadeOnUpdate()->setNullOnDelete();
+            $table->string('name');
             $table->integer('amount');
+            $table->enum('type', ['income', 'expense'])->default('income');
             $table->string('description');
             $table->date('date');
             $table->timestamps();
