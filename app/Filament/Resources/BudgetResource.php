@@ -18,7 +18,7 @@ class BudgetResource extends Resource
 {
     protected static ?string $model = Budget::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
+    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
 
     public static function form(Form $form): Form
     {
@@ -26,8 +26,6 @@ class BudgetResource extends Resource
             ->schema([
                 Forms\Components\Hidden::make('budgetId')
                     ->default(fn () => (string) Str::uuid7()),
-                Forms\Components\Hidden::make('user_id')
-                    ->default(fn () => auth()->id()),
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255)

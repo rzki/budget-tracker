@@ -15,7 +15,6 @@ return new class extends Migration
         Schema::create('budgets', function (Blueprint $table) {
             $table->id();
             $table->uuid('budgetId')->unique();
-            $table->foreignIdFor(User::class);
             $table->string('name');
             $table->date('period_start');
             $table->date('period_end');
