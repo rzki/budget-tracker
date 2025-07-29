@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('budget_categories', function (Blueprint $table) {
             $table->id();
+            $table->uuid('budgetCategoryId')->unique();
             $table->foreignIdFor(Budget::class);
             $table->foreignIdFor(Category::class);
             $table->integer('allocated_amount');

@@ -16,6 +16,7 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
+            $table->uuid('transactionId')->unique();
             $table->foreignIdFor(User::class);
             $table->foreignIdFor(Budget::class);
             $table->foreignIdFor(Category::class);
