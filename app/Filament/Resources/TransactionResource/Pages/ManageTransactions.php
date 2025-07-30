@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\TransactionResource\Pages;
 
 use App\Filament\Resources\TransactionResource;
+use App\Filament\Widgets\PocketsAllocationWidget;
 use Filament\Actions;
 use Filament\Resources\Pages\ManageRecords;
 
@@ -14,6 +15,13 @@ class ManageTransactions extends ManageRecords
     {
         return [
             Actions\CreateAction::make(),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            PocketsAllocationWidget::class,
         ];
     }
 }

@@ -55,25 +55,20 @@ class TransactionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('transactionId')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('budget_pocket_id')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('amount')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('date')
                     ->date()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('budgetPocket.pocket.name')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->dateTime('d M Y H:i:s')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->dateTime('d M Y H:i:s')
+                    ->sortable(),
             ])
             ->filters([
                 //
