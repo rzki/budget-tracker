@@ -30,31 +30,33 @@ final class TransactionWidget extends BaseWidget
             ->where('budget_id', $latestBudget->id)
             ->get();
 
-        $totalAllocated = $budgetPockets->sum('allocated_amount');
+        $budgetTotalAmount = $latestBudget->amount; // Total budget amount
+        $totalAllocatedToPockets = $budgetPockets->sum('allocated_amount'); // Total allocated to pockets
         $totalBalance = $budgetPockets->sum(fn($bp) => $bp->balance());
-        $totalSpent = $totalAllocated - $totalBalance;
-        $spentPercentage = $totalAllocated > 0 ? ($totalSpent / $totalAllocated) * 100 : 0;
+        $totalSpent = $totalAllocatedToPockets - $totalBalance;
+        $spentPercentage = $totalAllocatedToPockets > 0 ? ($totalSpent / $totalAllocatedToPockets) * 100 : 0;
+        $unallocatedBudget = $budgetTotalAmount - $totalAllocatedToPockets; // Remaining unallocated budget
 
         return [
-            Stat::make('Total Allocated', 'IDR ' . number_format($totalAllocated, 0, ',', '.'))
+            Stat::make('Latest Budget', 'IDR ' . number_format($budgetTotalAmount, 0, ',', '.'))
                 ->description($latestBudget->name)
                 ->descriptionIcon('heroicon-o-wallet')
                 ->color('info'),
 
-            Stat::make('Total Balance', 'IDR ' . number_format($totalBalance, 0, ',', '.'))
-                ->description($totalBalance < 0 ? 'Overspent' : 'Remaining')
-                ->descriptionIcon($totalBalance < 0 ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-check-circle')
-                ->color($totalBalance < 0 ? 'danger' : 'success'),
-
-            Stat::make('Total Spent', 'IDR ' . number_format($totalSpent, 0, ',', '.'))
-                ->description(number_format($spentPercentage, 1) . '% of budget')
-                ->descriptionIcon('heroicon-o-arrow-trending-up')
-                ->color($spentPercentage > 100 ? 'danger' : ($spentPercentage > 80 ? 'warning' : 'success')),
-
-            Stat::make('Active Pockets', $budgetPockets->count())
-                ->description('Budget categories')
+            Stat::make('Allocated to Pockets', 'IDR ' . number_format($totalAllocatedToPockets, 0, ',', '.'))
+                ->description('Total budget allocated to pockets')
                 ->descriptionIcon('heroicon-o-squares-2x2')
                 ->color('primary'),
+                
+            Stat::make('Unallocated Budget', 'IDR ' . number_format($unallocatedBudget, 0, ',', '.'))
+            ->description($unallocatedBudget >= 0 ? 'Available to allocate' : 'Over-allocated')
+            ->descriptionIcon($unallocatedBudget >= 0 ? 'heroicon-o-banknotes' : 'heroicon-o-exclamation-triangle')
+            ->color($unallocatedBudget >= 0 ? 'success' : 'warning'),
+
+            Stat::make('Total Spent', 'IDR ' . number_format($totalSpent, 0, ',', '.'))
+                ->description(number_format($spentPercentage, 1) . '% of allocated budget')
+                ->descriptionIcon('heroicon-o-arrow-trending-up')
+                ->color($spentPercentage > 100 ? 'danger' : ($spentPercentage > 80 ? 'warning' : 'success')),
         ];
     }
 }
