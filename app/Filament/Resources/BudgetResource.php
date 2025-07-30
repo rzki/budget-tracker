@@ -40,9 +40,35 @@ class BudgetResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('pocket_id')
                             ->relationship('pocket', 'name')
+                            ->createOptionForm([
+                                Forms\Components\Hidden::make('pocketId')
+                                    ->default(fn () => (string) Str::uuid7()),
+                                Forms\Components\TextInput::make('name')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->columnSpanFull(),
+                            ])
                             ->searchable()
                             ->preload()
-                            ->required(),
+                            ->required()
+                            ->live()
+                            ->disableOptionWhen(function ($value, $state, callable $get) {
+                                // Get all currently selected pocket IDs in this repeater
+                                $budgetPockets = $get('../../budgetPockets') ?? [];
+                                $selectedPocketIds = collect($budgetPockets)
+                                    ->pluck('pocket_id')
+                                    ->filter()
+                                    ->toArray();
+                                
+                                // Don't disable the current item's selection
+                                $currentPocketId = $get('pocket_id');
+                                if ($value == $currentPocketId) {
+                                    return false;
+                                }
+                                
+                                // Disable if this pocket is already selected in another row
+                                return in_array($value, $selectedPocketIds);
+                            }),
                         Forms\Components\TextInput::make('allocated_amount')
                             ->required()
                             ->numeric()
@@ -106,11 +132,32 @@ class BudgetResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('amount')
+                    ->label('Total Budget')
                     ->numeric()
                     ->sortable()
-                    ->formatStateUsing(fn ($state) => 'Rp. ' . number_format($state, 0, '', '.'))
+                    ->formatStateUsing(fn ($state) => 'IDR ' . number_format($state, 0, ',', '.')),
+                Tables\Columns\TextColumn::make('allocated_amount')
+                    ->label('Allocated')
+                    ->numeric()
+                    ->sortable()
+                    ->getStateUsing(function ($record) {
+                        return $record->budgetPockets()->sum('allocated_amount');
+                    })
+                    ->formatStateUsing(fn ($state) => 'IDR ' . number_format($state ?? 0, 0, ',', '.')),
+                Tables\Columns\TextColumn::make('unallocated_amount')
+                    ->label('Unallocated')
+                    ->numeric()
+                    ->sortable()
+                    ->getStateUsing(function ($record) {
+                        $totalBudget = $record->amount;
+                        $allocatedAmount = $record->budgetPockets()->sum('allocated_amount');
+                        return $totalBudget - $allocatedAmount;
+                    })
+                    ->formatStateUsing(fn ($state) => 'IDR ' . number_format($state ?? 0, 0, ',', '.'))
+                    ->color(fn ($state) => $state < 0 ? 'danger' : ($state > 0 ? 'success' : 'light')),
             ])
             ->filters([
                 //
