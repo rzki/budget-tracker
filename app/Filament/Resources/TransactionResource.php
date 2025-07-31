@@ -42,7 +42,7 @@ class TransactionResource extends Resource
                         'expense' => 'Expense',
                     ])
                     ->required()
-                    ->default('expense'),
+                    ->default('income'),
                 Forms\Components\TextInput::make('amount')
                     ->numeric()
                     ->required(),
@@ -56,11 +56,12 @@ class TransactionResource extends Resource
         return $table
             ->modifyQueryUsing(fn(Builder $query) => $query->with(['budgetPocket.pocket'])->orderByDesc('date')->orderByDesc('created_at'))
             ->columns([
+                Tables\Columns\TextColumn::make('date')
+                    ->date('d M Y')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('amount')
                     ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('date')
-                    ->date()
+                    ->formatStateUsing(fn ($state) => 'IDR ' . number_format($state, 0, ',', '.'))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('budgetPocket.pocket.name')
                     ->sortable(),

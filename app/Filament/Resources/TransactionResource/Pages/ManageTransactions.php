@@ -36,7 +36,7 @@ class ManageTransactions extends ManageRecords
     protected function getHeaderWidgets(): array
     {
         return [
-            PocketsAllocationWidget::class,
+            // PocketsAllocationWidget::class,
         ];
     }
 }
