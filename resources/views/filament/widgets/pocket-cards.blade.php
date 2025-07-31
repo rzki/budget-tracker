@@ -28,8 +28,8 @@
                         </div>
 
                         <!-- Pocket name -->
-                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white pr-6 mb-3">
-                            {{ $pocket['name'] }}
+                        <h4 class="text-lg text-center font-semibold text-gray-900 dark:text-white pr-6 mb-4">
+                            {{ $pocket['name'] }}<br>
                         </h4>
 
                         <!-- Amounts -->
@@ -68,13 +68,21 @@
                             </div>
                         </div>
 
-                        <!-- Quick action link -->
+                        <!-- Quick actions -->
                         <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
-                            <a href="{{ route('filament.dashboard.resources.transactions.index', ['tableFilters' => ['budget_pocket_id' => ['value' => $pocket['id']]]]) }}" 
-                               class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium flex items-center gap-1">
-                                <x-heroicon-o-eye class="h-3 w-3" />
-                                View Transactions
-                            </a>
+                            <div class="flex items-center justify-between gap-2">
+                                <a href="{{ route('filament.dashboard.resources.transactions.index', ['tableFilters' => ['budget_pocket_id' => ['value' => $pocket['id']]]]) }}" 
+                                   class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium flex items-center gap-1">
+                                    <x-heroicon-o-eye class="h-3 w-3" />
+                                    View
+                                </a>
+                                
+                                <a href="{{ route('filament.dashboard.resources.transactions.index', ['budget_pocket_id' => $pocket['id']]) }}" 
+                                   class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-2 py-1 text-xs font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors">
+                                    <x-heroicon-o-plus class="h-3 w-3" />
+                                    New
+                                </a>
+                            </div>
                         </div>
                     </div>
                 @endforeach

@@ -42,6 +42,7 @@ final class PocketCardsWidget extends Widget
 
                 return [
                     'id' => $budgetPocket->id,
+                    'pocket_id' => $budgetPocket->pocket->id,
                     'name' => $budgetPocket->pocket->name,
                     'budget_name' => $budgetPocket->budget->name,
                     'allocated_amount' => $budgetPocket->allocated_amount,
