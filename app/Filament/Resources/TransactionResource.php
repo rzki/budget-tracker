@@ -28,12 +28,12 @@ class TransactionResource extends Resource
                     ->default(fn () => (string) Str::uuid7()),
                 Forms\Components\Select::make('budget_pocket_id')
                     ->label('Pocket')
-                    ->options(
-                        \App\Models\BudgetPocket::with(['budget', 'pocket'])
+                    ->options(function () {
+                        return \App\Models\BudgetPocket::with(['budget', 'pocket'])
                             ->whereHas('budget', fn($query) => $query->latest()->limit(1))
                             ->get()
-                            ->mapWithKeys(fn($bp) => [$bp->id => $bp->pocket->name])
-                    )
+                            ->mapWithKeys(fn($bp) => [$bp->id => $bp->pocket->name]);
+                    })
                     ->searchable()
                     ->required(),
                 Forms\Components\Select::make('type')
@@ -41,8 +41,8 @@ class TransactionResource extends Resource
                         'income' => 'Income',
                         'expense' => 'Expense',
                     ])
-                    ->required()
-                    ->default('income'),
+                    ->default('expense')
+                    ->required(),
                 Forms\Components\TextInput::make('amount')
                     ->numeric()
                     ->required(),

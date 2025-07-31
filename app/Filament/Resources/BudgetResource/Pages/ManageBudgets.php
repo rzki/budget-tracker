@@ -14,6 +14,7 @@ class ManageBudgets extends ManageRecords
     {
         return [
             Actions\CreateAction::make()
+                ->slideOver()
                 ->successNotificationTitle('Budget created successfully'),
         ];
     }

@@ -14,6 +14,7 @@ class ManagePockets extends ManageRecords
     {
         return [
             Actions\CreateAction::make()
+                ->slideOver()
                 ->successNotificationTitle('Pocket created successfully'),
         ];
     }

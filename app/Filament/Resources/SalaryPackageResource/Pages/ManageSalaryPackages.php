@@ -13,7 +13,9 @@ class ManageSalaryPackages extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->slideOver()
+                ->successNotificationTitle('Salary package created successfully'),
         ];
     }
 }
