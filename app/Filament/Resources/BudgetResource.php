@@ -18,6 +18,7 @@ class BudgetResource extends Resource
 {
     protected static ?string $model = Budget::class;
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
+    protected static ?string $navigationGroup = 'Budgeting';
     protected static ?int $navigationSort = 1;
     public static function form(Form $form): Form
     {

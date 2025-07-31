@@ -18,6 +18,7 @@ class PocketResource extends Resource
     protected static ?string $model = Pocket::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-swatch';
+    protected static ?string $navigationGroup = 'Budgeting';
     protected static ?int $navigationSort = 0;
 
     public static function form(Form $form): Form
