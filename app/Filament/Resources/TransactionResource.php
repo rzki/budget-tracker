@@ -32,7 +32,7 @@ class TransactionResource extends Resource
                         \App\Models\BudgetPocket::with(['budget', 'pocket'])
                             ->whereHas('budget', fn($query) => $query->latest()->limit(1))
                             ->get()
-                            ->mapWithKeys(fn($bp) => [$bp->id => $bp->budget->name . ' - ' . $bp->pocket->name])
+                            ->mapWithKeys(fn($bp) => [$bp->id => $bp->pocket->name])
                     )
                     ->searchable()
                     ->required(),
@@ -46,14 +46,15 @@ class TransactionResource extends Resource
                 Forms\Components\TextInput::make('amount')
                     ->numeric()
                     ->required(),
-                Forms\Components\DatePicker::make('date')->required(),
-                Forms\Components\TextInput::make('note'),
+                Forms\Components\DatePicker::make('date')->required()->default(now()),
+                Forms\Components\TextInput::make('note')->columnSpanFull(),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn(Builder $query) => $query->with(['budgetPocket.pocket'])->orderByDesc('date')->orderByDesc('created_at'))
             ->columns([
                 Tables\Columns\TextColumn::make('amount')
                     ->numeric()
@@ -63,15 +64,29 @@ class TransactionResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('budgetPocket.pocket.name')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('type')
+                    ->sortable()
+                    ->formatStateUsing(fn ($state) => ucfirst($state)),
+                Tables\Columns\TextColumn::make('note'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime('d M Y H:i:s')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime('d M Y H:i:s')
                     ->sortable(),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('budget_pocket_id')
+                    ->label('Pocket')
+                    ->options(
+                        \App\Models\BudgetPocket::with(['budget', 'pocket'])
+                            ->whereHas('budget', fn($query) => $query->latest()->limit(1))
+                            ->get()
+                            ->mapWithKeys(fn($bp) => [$bp->id => $bp->pocket->name])
+                    ),
+                Tables\Filters\SelectFilter::make('type')
+                    ->label('Type')
+                    ->options([
+                        'income' => 'Income',
+                        'expense' => 'Expense',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

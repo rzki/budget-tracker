@@ -14,7 +14,22 @@ class ManageTransactions extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->mutateFormDataUsing(function (array $data): array {
+                    // Pre-fill budget_pocket_id from URL parameter
+                    if (request()->has('budget_pocket_id') && !isset($data['budget_pocket_id'])) {
+                        $data['budget_pocket_id'] = request()->get('budget_pocket_id');
+                    }
+                    return $data;
+                })
+                ->fillForm(function (): array {
+                    $formData = [];
+                    // Pre-fill budget_pocket_id from URL parameter
+                    if (request()->has('budget_pocket_id')) {
+                        $formData['budget_pocket_id'] = request()->get('budget_pocket_id');
+                    }
+                    return $formData;
+                }),
         ];
     }
 
