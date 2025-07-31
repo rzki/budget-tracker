@@ -1,8 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
-namespace App\Filament\Widgets;
+namespace App\Filament\Resources\TransactionResource\Widgets;
 
 use App\Models\Budget;
 use App\Models\BudgetPocket;
@@ -13,14 +11,6 @@ final class PocketsAllocationWidget extends BaseWidget
 {
     protected static ?int $sort = 5;
     protected int | string | array $columnSpan = 'full';
-    // Disable lazy loading to prevent performance issues
-    protected bool $shouldLazyLoad = false;
-    // Prevent this widget from showing on dashboard
-    public static function canView(): bool
-    {
-        return request()->routeIs('filament.dashboard.resources.transactions.index');
-    }
-
     protected function getStats(): array
     {
         $latestBudget = Budget::latest()->first();
