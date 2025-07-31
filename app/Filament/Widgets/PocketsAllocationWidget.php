@@ -15,6 +15,13 @@ final class PocketsAllocationWidget extends BaseWidget
     
     protected int | string | array $columnSpan = 'full';
 
+    
+    // Prevent this widget from showing on dashboard
+    public static function canView(): bool
+    {
+        return request()->routeIs('filament.dashboard.resources.transactions.index');
+    }
+
     protected function getStats(): array
     {
         $latestBudget = Budget::latest()->first();
