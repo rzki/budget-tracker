@@ -16,7 +16,8 @@ return new class extends Migration
             $table->uuid('overtimeId')->unique();
             $table->foreignId('salary_package_id')->constrained()->onDelete('cascade');
             $table->enum('type', ['weekday', 'weekend']); // Weekday or Weekend overtime
-            $table->decimal('hours', 5, 2); // Number of overtime hours
+            $table->time('start_time'); // Overtime start time
+            $table->time('end_time'); // Overtime end time
             $table->date('overtime_date');
             $table->text('description')->nullable();
             $table->timestamps();

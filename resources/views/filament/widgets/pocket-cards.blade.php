@@ -77,7 +77,7 @@
                                     View
                                 </a>
                                 
-                                <a href="{{ route('filament.dashboard.resources.transactions.index', ['budget_pocket_id' => $pocket['id']]) }}" 
+                                <a href="{{ route('filament.dashboard.resources.transactions.index', ['action' => 'create','budget_pocket_id' => $pocket['id']]) }}" 
                                    class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-2 py-1 text-xs font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors">
                                     <x-heroicon-o-plus class="h-3 w-3" />
                                     New

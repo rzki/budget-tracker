@@ -11,9 +11,12 @@ class SalaryPackage extends Model
     protected $guarded = ['id'];
 
     protected $casts = [
-        'base_salary' => 'decimal:2',
-        'calculation_period_start' => 'datetime',
-        'calculation_period_end' => 'datetime',
+        'base_salary' => 'integer',
+        'bpjs_reduction' => 'integer',
+        'pph21_reduction' => 'integer',
+        'jamsostek_reduction' => 'integer',
+        'calculation_period_start' => 'date',
+        'calculation_period_end' => 'date',
         'is_active' => 'boolean',
     ];
 
@@ -92,24 +95,9 @@ class SalaryPackage extends Model
     public function getTotalOvertimeAmount(): float
     {
         $totalAmount = 0;
-        $hourlyRate = $this->getOvertimeHourlyRate();
 
         foreach ($this->overtimes as $overtime) {
-            if ($overtime->type === 'weekday') {
-                // Weekday overtime: 1.5x for first 1 hour, 2x for subsequent hours
-                $firstHour = min($overtime->hours, 1);
-                $remainingHours = max($overtime->hours - 1, 0);
-                $totalAmount += ($firstHour * $hourlyRate * 1.5) + ($remainingHours * $hourlyRate * 2);
-            } else {
-                // Weekend overtime: 2x for first 7 hours, 3x for 8th hour, 4x for subsequent hours
-                $firstSevenHours = min($overtime->hours, 7);
-                $eighthHour = min(max($overtime->hours - 7, 0), 1);
-                $remainingHours = max($overtime->hours - 8, 0);
-                
-                $totalAmount += ($firstSevenHours * $hourlyRate * 2) + 
-                               ($eighthHour * $hourlyRate * 3) + 
-                               ($remainingHours * $hourlyRate * 4);
-            }
+            $totalAmount += $overtime->calculateOvertimePayment();
         }
 
         return $totalAmount;
@@ -145,19 +133,110 @@ class SalaryPackage extends Model
      */
     public function getTotalSalaryEstimation(): array
     {
+        $baseSalary = (float) $this->base_salary;
         $fixedAmount = $this->getTotalFixedAmount();
         $relativeAmount = $this->getTotalRelativeAmount();
         $overtimeAmount = $this->getTotalOvertimeAmount();
         $weekendBonus = $this->getWeekendOvertimeMealTransportBonus();
-        $total = $fixedAmount + $relativeAmount + $overtimeAmount + $weekendBonus;
+        $totalReductions = $this->getTotalReductions();
+        $total = $baseSalary + $fixedAmount + $relativeAmount + $overtimeAmount + $weekendBonus - $totalReductions;
 
         return [
+            'base_salary' => $baseSalary,
             'fixed_components' => $fixedAmount,
             'relative_components' => $relativeAmount,
             'overtime_amount' => $overtimeAmount,
             'weekend_overtime_bonus' => $weekendBonus,
+            'total_reductions' => $totalReductions,
+            'bpjstk_reduction' => $this->bpjstk_reduction,
+            'pph21_reduction' => $this->pph21_reduction,
+            'jamsostek_reduction' => $this->jamsostek_reduction,
+            'meal_budget_cuts' => $this->getMealBudgetCuts(),
+            'transport_budget_cuts' => $this->getTransportBudgetCuts(),
             'total_salary' => $total,
             'work_days' => $this->getWorkDaysInPeriod(),
         ];
+    }
+
+    /**
+     * Get daily meal budget from salary components
+     */
+    public function getDailyMealBudget(): float
+    {
+        $mealComponent = $this->salaryComponents()
+            ->where('name', 'LIKE', '%meal%')
+            ->orWhere('name', 'LIKE', '%makan%')
+            ->first();
+            
+        if (!$mealComponent) {
+            return 0;
+        }
+        
+        // Return the component amount directly as daily rate
+        return $mealComponent->amount;
+    }
+
+    /**
+     * Get daily transport budget from salary components
+     */
+    public function getDailyTransportBudget(): float
+    {
+        $transportComponent = $this->salaryComponents()
+            ->where('name', 'LIKE', '%transport%')
+            ->orWhere('name', 'LIKE', '%transportasi%')
+            ->first();
+            
+        if (!$transportComponent) {
+            return 0;
+        }
+        
+        // Return the component amount directly as daily rate
+        return $transportComponent->amount;
+    }
+
+    /**
+     * Calculate meal budget cuts based on attendance
+     */
+    public function getMealBudgetCuts(): float
+    {
+        $dailyMealBudget = $this->getDailyMealBudget();
+        if ($dailyMealBudget <= 0) {
+            return 0;
+        }
+        
+        // Meal budget is cut for sick days, break days, and late days
+        $totalCutDays = $this->sick_days + $this->break_days + $this->late_days;
+        return $totalCutDays * $dailyMealBudget;
+    }
+
+    /**
+     * Calculate transport budget cuts based on attendance
+     */
+    public function getTransportBudgetCuts(): float
+    {
+        $dailyTransportBudget = $this->getDailyTransportBudget();
+        if ($dailyTransportBudget <= 0) {
+            return 0;
+        }
+        
+        // Transport budget is only cut for sick days and break days (not late days)
+        $totalCutDays = $this->sick_days + $this->break_days;
+        return $totalCutDays * $dailyTransportBudget;
+    }
+
+    /**
+     * Calculate total attendance-based budget cuts
+     */
+    public function getTotalBudgetCuts(): float
+    {
+        return $this->getMealBudgetCuts() + $this->getTransportBudgetCuts();
+    }
+
+    /**
+     * Calculate total reductions (BPJS, PPh21, Jamsostek, and budget cuts)
+     */
+    public function getTotalReductions(): float
+    {
+        return $this->bpjs_reduction + $this->pph21_reduction + $this->jamsostek_reduction + $this->getTotalBudgetCuts();
     }
 }

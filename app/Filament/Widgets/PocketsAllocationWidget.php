@@ -12,10 +12,9 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 final class PocketsAllocationWidget extends BaseWidget
 {
     protected static ?int $sort = 5;
-    
     protected int | string | array $columnSpan = 'full';
-
-    
+    // Disable lazy loading to prevent performance issues
+    protected bool $shouldLazyLoad = false;
     // Prevent this widget from showing on dashboard
     public static function canView(): bool
     {
